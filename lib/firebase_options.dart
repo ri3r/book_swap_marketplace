@@ -28,10 +28,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -44,45 +41,51 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Update these Firebase options with your actual project credentials
-  // Follow the setup instructions in the README.md
-
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'your-project.firebaseapp.com',
-    databaseURL: 'https://your-project.firebaseio.com',
-    storageBucket: 'your-project.appspot.com',
+    apiKey: 'AIzaSyBSSyv7SAJ7klf0XCf2FW_g1Ru47y1xAAM',
+    appId: '1:481739383143:web:cf3b85ce828a239bdf8fc2',
+    messagingSenderId: '481739383143',
+    projectId: 'marketplace-12ea3',
+    authDomain: 'marketplace-12ea3.firebaseapp.com',
+    storageBucket: 'marketplace-12ea3.firebasestorage.app',
+    measurementId: 'G-LVWB4WJR23',
   );
-//Todo
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'https://your-project.firebaseio.com',
-    storageBucket: 'your-project.appspot.com',
+    apiKey: 'AIzaSyCB7dHACNKZtEkajbFv-eLIKSyBMNP8ksc',
+    appId: '1:481739383143:android:7b172e6197bd494adf8fc2',
+    messagingSenderId: '481739383143',
+    projectId: 'marketplace-12ea3',
+    storageBucket: 'marketplace-12ea3.firebasestorage.app',
   );
+
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'https://your-project.firebaseio.com',
-    storageBucket: 'your-project.appspot.com',
-    iosBundleId: 'com.example.boookmarketplace',
+    apiKey: 'AIzaSyDkt4K-lRrIQSjOUPHDceeRiALQfKNSmxw',
+    appId: '1:481739383143:ios:038cf600b41fe0f5df8fc2',
+    messagingSenderId: '481739383143',
+    projectId: 'marketplace-12ea3',
+    storageBucket: 'marketplace-12ea3.firebasestorage.app',
+    iosBundleId: 'com.example.boookMarketplace',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_MACOS_API_KEY',
-    appId: 'YOUR_MACOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'https://your-project.firebaseio.com',
-    storageBucket: 'your-project.appspot.com',
-    iosBundleId: 'com.example.boookmarketplace',
+    apiKey: 'AIzaSyDkt4K-lRrIQSjOUPHDceeRiALQfKNSmxw',
+    appId: '1:481739383143:ios:038cf600b41fe0f5df8fc2',
+    messagingSenderId: '481739383143',
+    projectId: 'marketplace-12ea3',
+    storageBucket: 'marketplace-12ea3.firebasestorage.app',
+    iosBundleId: 'com.example.boookMarketplace',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBSSyv7SAJ7klf0XCf2FW_g1Ru47y1xAAM',
+    appId: '1:481739383143:web:05150c6a87212d03df8fc2',
+    messagingSenderId: '481739383143',
+    projectId: 'marketplace-12ea3',
+    authDomain: 'marketplace-12ea3.firebaseapp.com',
+    storageBucket: 'marketplace-12ea3.firebasestorage.app',
+    measurementId: 'G-MC8YR0VRXP',
+  );
+
 }

@@ -29,9 +29,9 @@ class BookListTile extends StatelessWidget {
                 child: SizedBox(
                   width: 80,
                   height: 120,
-                  child: book.imageUrl != null
+                  child: book.coverUrl != null
                       ? CachedNetworkImage(
-                          imageUrl: book.imageUrl!,
+                          imageUrl: book.coverUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
                               const Center(child: CircularProgressIndicator()),

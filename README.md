@@ -1,196 +1,101 @@
-# BookSwap - Book Marketplace Application
+# BookSwap — Book Marketplace App
 
-A feature-rich Flutter application that enables users to browse, buy, and swap books in their community. Built with modern architecture patterns and state management.
+A Flutter application that lets users browse, buy, swap, and give away books within their community. Users can post listings with title, author, condition, price, and contact details. The app supports infinite scrolling, search, filtering, and persistent dark/light theme preferences.
 
-## Project Description
+---
 
-BookSwap is a mobile marketplace platform where book enthusiasts can:
-- **Browse** thousands of book listings from their community with infinite scrolling
-- **Search** for specific books using advanced filters (category, condition, listing type)
-- **Post** their own books for sale, swap, or free distribution with comprehensive form validation
-- **Connect** with sellers through direct contact information
-- **Customize** the app experience with persistent light/dark theme preferences
+## Screenshots
 
-The application demonstrates modern Flutter development best practices with a clean, layered architecture supporting scalability and maintenance.
+| Browse | Book Detail | Add Listing |
+|--------|-------------|-------------|
+| ![Browse Screen](screenshots/browse.png) | ![Detail Screen](screenshots/detail.png) | ![Add Listing](screenshots/add_listing.png) |
 
-## Technical Requirements Met
+---
 
-✅ **Navigation**: Bottom navigation bar + side drawer menu  
-✅ **List View**: Scrollable ListView with infinite pagination (10 items/page)  
-✅ **Custom Widgets**: BookListTile widget with images and condition badges  
-✅ **Detail Screen**: Full book details with seller information  
-✅ **Validation**: Validators class with all validation logic outside widgets  
-✅ **Theme**: Light/dark mode toggle with Material 3 design  
-✅ **State Management**: Riverpod with reactive providers  
-✅ **Architecture**: Layered (models/, services/, providers/, screens/, widgets/)  
-✅ **Async Handling**: Loading, error, and empty states  
-✅ **Navigation**: go_router with named routes  
-✅ **Tests**: Unit + widget tests (all passing)  
-✅ **About Screen**: Developer info with contact details  
-✅ **Settings**: Theme preference persisted in shared_prefs  
-✅ **Design**: Colors, icons, Material 3 components  
+## Setup & Run Instructions
+
+**Requirements**
+- Flutter SDK: **3.41.6** (stable)
+- Dart SDK: 3.x
+- Android emulator or physical device (iOS/Android)
+
+**Installation**
+
+```bash
+# 1. Clone the repository
+git clone <repo-url>
+cd book_swap_marketplace
+
+# 2. Install dependencies
+flutter pub get
+
+# 3. Run the app
+flutter run
+
+# 4. Run all tests
+flutter test
+```
+
+**Firebase Setup (optional)**
+
+The app works offline using `assets/data/books.json` as a fallback. To enable Firestore:
+
+```bash
+# Install FlutterFire CLI
+dart pub global activate flutterfire_cli
+
+# Configure Firebase (select your project)
+flutterfire configure
+```
+
+Then create a Firestore database in the [Firebase Console](https://console.firebase.google.com) and deploy the security rules:
+
+```bash
+firebase deploy --only firestore:rules --project <your-project-id>
+```
+
+---
+
+## Main Packages
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `flutter_riverpod` | ^2.5.1 | Reactive state management — manages books list, search, filters, and theme state |
+| `go_router` | ^14.2.4 | Declarative navigation with named routes and deep-link support |
+| `shared_preferences` | ^2.2.2 | Persists the user's light/dark theme preference across app restarts |
+| `cached_network_image` | ^3.3.1 | Efficiently loads and caches book cover images from URLs |
+| `firebase_core` | ^3.3.0 | Firebase SDK initialization required for all Firebase services |
+| `cloud_firestore` | ^5.3.0 | Cloud database for persistent book listings with real-time sync |
+| `intl` | ^0.19.0 | Date formatting for listing timestamps |
+| `mockito` | ^5.4.4 | Mocking in unit and widget tests |
+
+---
 
 ## Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with Riverpod setup
-├── models/
-│   └── book_listing.dart       # Book model (fromJson/toJson)
-├── services/
-│   └── book_service.dart       # Data service for JSON + filtering
-├── providers/
-│   ├── books_provider.dart     # Books state (pagination + filters)
-│   └── theme_provider.dart     # Theme state (SharedPreferences)
-├── screens/
-│   ├── home_screen.dart        # Shell with drawer + nav bar
-│   ├── browse_screen.dart      # Book list (infinite scroll)
-│   ├── search_screen.dart      # Search with validation
-│   ├── book_detail_screen.dart # Book details
-│   ├── add_listing_screen.dart # Form with validation
-│   ├── settings_screen.dart    # Theme + preferences
-│   └── about_screen.dart       # Developer info
-├── widgets/
-│   ├── book_list_tile.dart     # Custom list tile
-│   ├── condition_badge.dart    # Condition indicator
-│   ├── loading_widget.dart     # Loading state
-│   ├── app_error_widget.dart   # Error state with retry
-│   └── empty_state_widget.dart # Empty results state
-├── theme/
-│   └── app_theme.dart          # Light/dark themes
-├── utils/
-│   └── validators.dart         # All validation functions
-└── router/
-    └── app_router.dart         # go_router configuration
+├── models/         # BookListing model with fromJson/toJson
+├── services/       # BookService (JSON) + FirestoreBookService (Firebase)
+├── providers/      # BooksNotifier (pagination, search, filter) + ThemeNotifier
+├── screens/        # browse, search, detail, add_listing, settings, about
+├── widgets/        # BookListTile, ConditionBadge, LoadingWidget, AppErrorWidget, EmptyStateWidget
+├── utils/          # Validators (all validation logic outside widgets)
+├── theme/          # Light & dark MaterialTheme definitions
+└── router/         # GoRouter configuration with named routes
 
 assets/
-└── data/
-    └── books.json              # Sample book data (20 entries)
+└── data/books.json # Local seed data (fallback when Firebase is unavailable)
 
 test/
-├── models/book_listing_test.dart      # Model tests
-├── utils/validators_test.dart         # Validator tests
-├── providers/books_provider_test.dart # State tests
-└── widgets/book_list_tile_test.dart   # Widget tests
+├── models/         # BookListing fromJson/toJson unit tests
+├── utils/          # Validator function unit tests
+├── providers/      # BooksNotifier unit tests
+└── widgets/        # BookListTile widget tests
 ```
-
-## Setup Instructions
-
-### Requirements
-- Flutter SDK: ^3.11.4
-- Android SDK (emulator) or Xcode (iOS)
-
-### Installation
-
-```bash
-# Navigate to project
-cd boook_marketplace
-
-# Install dependencies
-flutter pub get
-
-# Run app on emulator
-flutter run
-
-# Run all tests
-flutter test
-
-# Run tests with coverage
-flutter test --coverage
-```
-
-## Main Packages & Why
-
-| Package | Purpose |
-|---------|---------|
-| **flutter_riverpod** | Reactive state management |
-| **go_router** | Declarative navigation |
-| **shared_preferences** | Local theme persistence |
-| **cached_network_image** | Efficient image loading |
-| **intl** | Date formatting |
-
-## Features
-
-### Core
-- Infinite pagination (10 books/page)
-- Real-time search and filtering
-- Form validation with clear errors
-- Theme switching with persistence
-- Error states with retry options
-- Empty states with helpful messages
-
-### Data
-- JSON-based book data (easy Firebase migration)
-- Service layer abstraction
-- Model serialization (fromJson/toJson)
-
-### UI/UX
-- Material 3 design
-- Condition badges with colors
-- Category icons
-- Loading indicators
-- Responsive layout
-
-## Testing
-
-```bash
-# Run all tests
-flutter test
-
-# Specific test file
-flutter test test/utils/validators_test.dart
-
-# With coverage report
-flutter test --coverage
-```
-
-**Test Coverage**:
-- Unit tests: Models, Validators, Providers
-- Widget tests: BookListTile rendering and interactions
-
-## Architecture Highlights
-
-- **Layered Design**: Data → Logic → UI separation
-- **Repository Pattern**: BookService abstraction
-- **Provider Pattern**: Riverpod reactive state
-- **Validator Pattern**: Pure validation functions
-- **Custom Widgets**: Reusable BookListTile
-- **No Business Logic in Widgets**: Clean separation of concerns
-
-## Firebase Integration ✅ Implemented
-
-The app now includes **Firebase Firestore** support for persistent storage!
-
-**Features:**
-- Automatic syncing of new book listings to Firestore
-- Data persists across app restarts
-- Graceful fallback to local JSON if Firebase unavailable
-- Seamless setup with FlutterFire CLI
-
-**To Enable Firebase:**
-
-1. Set up Firebase project (free tier available)
-2. Run: `flutterfire configure`
-3. Update `lib/firebase_options.dart` with your credentials
-4. Create Firestore database
-5. Done! Books now persist in the cloud
-
-See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for detailed instructions.
-
-**Current State:**
-- 🟢 Firebase code is ready (just needs configuration)
-- 🟢 App works with or without Firebase
-- 🟢 All books added are synced to Firestore
-
-## Developer
-
-**Group4**
-gino@example.com
-
-## Version
-
-**v1.0.0** - April 2026 - Initial Release
 
 ---
 
-Built with Flutter & Riverpod ❤️
+## Developer
+
+**Gino Chianese**

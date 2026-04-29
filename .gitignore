@@ -1,7 +1,3 @@
-build/
-.dart_tool/
-pubspec.lock
-
 # Flutter
 .dart_tool/
 .flutter-plugins
@@ -21,9 +17,20 @@ ios/.symlinks/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 
-# Firebase
+# Firebase — generated credentials, never commit these
 lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+
+# Android signing
+android/key.properties
+*.jks
+*.keystore
 
 # macOS
 .DS_Store
 
+# Environment
+.env
+EOF

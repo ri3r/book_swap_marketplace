@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/book_listing.dart';
@@ -58,7 +59,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final newListing = BookListing(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: FirebaseFirestore.instance.collection('books').doc().id,
         title: _titleController.text,
         author: _authorController.text,
         isbn: _isbnController.text.isEmpty ? null : _isbnController.text,

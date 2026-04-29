@@ -57,9 +57,9 @@ class BookDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (book.imageUrl != null)
+                if (book.coverUrl != null)
                   CachedNetworkImage(
-                    imageUrl: book.imageUrl!,
+                    imageUrl: book.coverUrl!,
                     width: double.infinity,
                     height: 300,
                     fit: BoxFit.cover,

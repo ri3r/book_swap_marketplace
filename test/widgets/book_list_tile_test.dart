@@ -143,20 +143,35 @@ void main() {
       expect(find.text('For Swap'), findsOneWidget);
     });
 
-    testWidgets('displays default book icon when no image', (WidgetTester tester) async {
+    testWidgets('displays default book icon when no image and no isbn', (WidgetTester tester) async {
+      final noImageBook = BookListing(
+        id: '2',
+        title: 'No Cover Book',
+        author: 'Unknown',
+        price: 5.00,
+        condition: BookCondition.fair,
+        type: ListingType.sale,
+        category: BookCategory.other,
+        description: 'No image or isbn',
+        sellerName: 'Jane',
+        sellerContact: 'jane@example.com',
+        location: 'Berlin',
+        datePosted: DateTime(2024, 1, 1),
+      );
+
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
           home: Scaffold(
             body: BookListTile(
-              book: testBook,
+              book: noImageBook,
               onTap: () {},
             ),
           ),
         ),
       );
 
-      expect(find.byIcon(Icons.book), findsWidgets);
+      expect(find.byIcon(Icons.book), findsOneWidget);
     });
   });
 }

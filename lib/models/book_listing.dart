@@ -175,6 +175,11 @@ class BookListing {
     'isAvailable': isAvailable,
   };
 
+  String? get coverUrl =>
+      imageUrl ?? (isbn != null
+          ? 'https://covers.openlibrary.org/b/isbn/$isbn-M.jpg'
+          : null);
+
   BookListing copyWith({
     String? id,
     String? title,

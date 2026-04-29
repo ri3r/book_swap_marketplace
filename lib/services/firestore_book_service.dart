@@ -9,7 +9,9 @@ class FirestoreBookService extends BookService {
   @override
   Future<List<BookListing>> loadAllBooks() async {
     try {
-      final snapshot = await _firestore.collection(_booksCollection).get();
+      final snapshot = await _firestore
+          .collection(_booksCollection)
+          .get(const GetOptions(source: Source.server));
       if (snapshot.docs.isEmpty) {
         // If Firestore is empty, seed with local data
         final localBooks = await super.loadAllBooks();
