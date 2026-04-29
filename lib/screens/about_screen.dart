@@ -55,7 +55,7 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Text(
-                'Developer',
+                'Developers',
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge
@@ -64,7 +64,19 @@ class AboutScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _ContactCard(
                 name: 'Gino Chianese',
-                email: 'gino@example.com',
+                email: 'gino.chianese@study.thws.de',
+                location: 'Würzburg, Germany',
+              ),
+              const SizedBox(height: 12),
+              _ContactCard(
+                name: 'Elisa Holzheid',
+                email: 'elisa.holzheid@study.thws.de',
+                location: 'Würzburg, Germany',
+              ),
+              const SizedBox(height: 12),
+              _ContactCard(
+                name: 'Edin Putzu',
+                email: 'edin.putzu@study.thws.de',
                 location: 'Würzburg, Germany',
               ),
               const SizedBox(height: 32),
