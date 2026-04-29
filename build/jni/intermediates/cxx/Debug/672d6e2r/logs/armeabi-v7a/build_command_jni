@@ -1,0 +1,4 @@
+/Users/gino/Library/Android/sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /Users/gino/.pub-cache/hosted/pub.dev/jni-1.0.0/android/.cxx/Debug/672d6e2r/armeabi-v7a \
+  jni
