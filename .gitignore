@@ -1,0 +1,29 @@
+build/
+.dart_tool/
+pubspec.lock
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+pubspec.lock
+.packages
+
+# Android
+android/local.properties
+android/.gradle
+android/app/debug
+android/app/release
+
+# iOS
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Firebase
+lib/firebase_options.dart
+
+# macOS
+.DS_Store
+

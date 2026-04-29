@@ -1,1 +1,0 @@
- /Users/gino/IdeaProjects/book_swap_marketplace/.dart_tool/flutter_build/354fb94875afd462b8f8af8ceb4e24a4/dart_build_result.json:  /Users/gino/IdeaProjects/book_swap_marketplace/.dart_tool/package_config.json /Users/gino/IdeaProjects/book_swap_marketplace/pubspec.yaml /Users/gino/flutter/bin/cache/dart-sdk/version

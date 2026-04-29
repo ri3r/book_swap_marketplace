@@ -1,2 +1,0 @@
-/Users/gino/IdeaProjects/boook_marketplace/build/.cxx/debug/3a3p4y22/armeabi-v7a/CMakeFiles/edit_cache.dir
-/Users/gino/IdeaProjects/boook_marketplace/build/.cxx/debug/3a3p4y22/armeabi-v7a/CMakeFiles/rebuild_cache.dir

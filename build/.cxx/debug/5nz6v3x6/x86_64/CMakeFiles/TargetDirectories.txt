@@ -1,2 +1,0 @@
-/Users/gino/IdeaProjects/book_swap_marketplace/build/.cxx/debug/5nz6v3x6/x86_64/CMakeFiles/edit_cache.dir
-/Users/gino/IdeaProjects/book_swap_marketplace/build/.cxx/debug/5nz6v3x6/x86_64/CMakeFiles/rebuild_cache.dir
