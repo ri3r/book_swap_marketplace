@@ -98,5 +98,7 @@ test/
 
 ## Developer
 **Elisa Holzheid**
+
 **Edin Putzu**
+
 **Gino Chianese**
