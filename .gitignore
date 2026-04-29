@@ -28,6 +28,11 @@ android/key.properties
 *.jks
 *.keystore
 
+# Scripts
+scripts/node_modules/
+scripts/package-lock.json
+scripts/package.json
+
 # macOS
 .DS_Store
 
