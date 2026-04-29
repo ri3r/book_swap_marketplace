@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidCondition(v) {
+      return v in ['newBook', 'likeNew', 'good', 'fair', 'poor'];
+    }
+
+    function isValidType(v) {
+      return v in ['sale', 'swap', 'free'];
+    }
+
+    function isValidCategory(v) {
+      return v in ['fiction', 'nonFiction', 'textbook', 'childrens',
+                   'science', 'history', 'arts', 'technology', 'other'];
+    }
+
+    function isValidBook(data) {
+      return data.keys().hasAll([
+            'id', 'title', 'author', 'price', 'condition', 'type',
+            'category', 'description', 'sellerName', 'sellerContact',
+            'location', 'datePosted', 'isAvailable'
+          ])
+        && data.id is string       && data.id.size() > 0
+        && data.title is string    && data.title.size() > 0    && data.title.size() <= 200
+        && data.author is string   && data.author.size() > 0   && data.author.size() <= 200
+        && data.price is number    && data.price >= 0          && data.price <= 99999
+        && data.condition is string && isValidCondition(data.condition)
+        && data.type is string      && isValidType(data.type)
+        && data.category is string  && isValidCategory(data.category)
+        && data.description is string && data.description.size() <= 2000
+        && data.sellerName is string    && data.sellerName.size() > 0 && data.sellerName.size() <= 100
+        && data.sellerContact is string && data.sellerContact.size() > 0 && data.sellerContact.size() <= 200
+        && data.location is string  && data.location.size() <= 200
+        && data.datePosted is string
+        && data.isAvailable is bool;
+    }
+
+    match /books/{bookId} {
+      // Public read — anyone can browse listings
+      allow read: if true;
+
+      // Write only allowed with valid, well-formed data
+      allow create: if isValidBook(request.resource.data);
+      allow update: if isValidBook(request.resource.data);
+
+      // Delete is open (no auth yet); add `if request.auth != null` once auth is integrated
+      allow delete: if true;
+    }
+
+    // Deny every other collection by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
