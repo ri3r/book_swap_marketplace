@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../models/book_listing.dart';
 import '../screens/home_screen.dart';
 import '../screens/browse_screen.dart';
 import '../screens/search_screen.dart';
@@ -26,7 +27,9 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/add',
           name: 'add',
-          builder: (context, state) => const AddListingScreen(),
+          builder: (context, state) => AddListingScreen(
+            initialListing: state.extra as BookListing?,
+          ),
         ),
         GoRoute(
           path: '/settings',
