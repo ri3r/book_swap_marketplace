@@ -35,17 +35,16 @@ class BooksState {
     String? searchQuery,
     BookCategory? filterCategory,
     ListingType? filterType,
-  }) =>
-      BooksState(
-        books: books ?? this.books,
-        isLoading: isLoading ?? this.isLoading,
-        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-        error: error ?? this.error,
-        hasMore: hasMore ?? this.hasMore,
-        searchQuery: searchQuery ?? this.searchQuery,
-        filterCategory: filterCategory ?? this.filterCategory,
-        filterType: filterType ?? this.filterType,
-      );
+  }) => BooksState(
+    books: books ?? this.books,
+    isLoading: isLoading ?? this.isLoading,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    error: error ?? this.error,
+    hasMore: hasMore ?? this.hasMore,
+    searchQuery: searchQuery ?? this.searchQuery,
+    filterCategory: filterCategory ?? this.filterCategory,
+    filterType: filterType ?? this.filterType,
+  );
 }
 
 class BooksNotifier extends StateNotifier<BooksState> {
@@ -114,7 +113,16 @@ class BooksNotifier extends StateNotifier<BooksState> {
   }
 
   void setFilterCategory(BookCategory? category) {
-    state = state.copyWith(filterCategory: category);
+    state = BooksState(
+      books: state.books,
+      isLoading: state.isLoading,
+      isLoadingMore: state.isLoadingMore,
+      error: state.error,
+      hasMore: state.hasMore,
+      searchQuery: state.searchQuery,
+      filterCategory: category,
+      filterType: state.filterType,
+    );
     _filteredBooks = _applyFilters(_allBooks);
     final page = _filteredBooks.take(_pageSize).toList();
     state = state.copyWith(
@@ -124,7 +132,16 @@ class BooksNotifier extends StateNotifier<BooksState> {
   }
 
   void setFilterType(ListingType? type) {
-    state = state.copyWith(filterType: type);
+    state = BooksState(
+      books: state.books,
+      isLoading: state.isLoading,
+      isLoadingMore: state.isLoadingMore,
+      error: state.error,
+      hasMore: state.hasMore,
+      searchQuery: state.searchQuery,
+      filterCategory: state.filterCategory,
+      filterType: type,
+    );
     _filteredBooks = _applyFilters(_allBooks);
     final page = _filteredBooks.take(_pageSize).toList();
     state = state.copyWith(
@@ -155,7 +172,9 @@ class BooksNotifier extends StateNotifier<BooksState> {
   Future<void> retry() => loadInitial();
 }
 
-final bookServiceProvider = Provider<BookService>((ref) => FirestoreBookService());
+final bookServiceProvider = Provider<BookService>(
+  (ref) => FirestoreBookService(),
+);
 
 final booksProvider = StateNotifierProvider<BooksNotifier, BooksState>(
   (ref) => BooksNotifier(ref.watch(bookServiceProvider)),
