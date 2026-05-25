@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/book_listing.dart';
+import '../providers/auth_provider.dart';
 import '../providers/books_provider.dart';
-import '../providers/my_listings_provider.dart';
 import '../utils/validators.dart';
 
 class AddListingScreen extends ConsumerStatefulWidget {
@@ -38,6 +38,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
   void initState() {
     super.initState();
     final b = widget.initialListing;
+    final user = ref.read(currentUserProvider);
     _titleController = TextEditingController(text: b?.title ?? '');
     _authorController = TextEditingController(text: b?.author ?? '');
     _priceController = TextEditingController(
@@ -47,10 +48,12 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
     );
     _descriptionController = TextEditingController(text: b?.description ?? '');
     _locationController = TextEditingController(text: b?.location ?? '');
-    _contactController = TextEditingController(text: b?.sellerContact ?? '');
+    _contactController = TextEditingController(
+        text: b?.sellerContact ?? user?.email ?? '');
     _isbnController = TextEditingController(text: b?.isbn ?? '');
     _imageUrlController = TextEditingController(text: b?.imageUrl ?? '');
-    _sellerNameController = TextEditingController(text: b?.sellerName ?? '');
+    _sellerNameController = TextEditingController(
+        text: b?.sellerName ?? user?.displayName ?? '');
     _selectedCondition = b?.condition ?? BookCondition.good;
     _selectedType = b?.type ?? ListingType.sale;
     _selectedCategory = b?.category ?? BookCategory.other;
@@ -99,6 +102,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
       );
       context.pop();
     } else {
+      final user = ref.read(currentUserProvider);
       final newListing = BookListing(
         id: FirebaseFirestore.instance.collection('books').doc().id,
         title: _titleController.text.trim(),
@@ -119,9 +123,9 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
             : _imageUrlController.text.trim(),
         location: _locationController.text.trim(),
         datePosted: DateTime.now(),
+        ownerId: user?.uid,
       );
       ref.read(booksProvider.notifier).addListing(newListing);
-      ref.read(myListingsProvider.notifier).add(newListing.id);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Listing added successfully!')),
       );
