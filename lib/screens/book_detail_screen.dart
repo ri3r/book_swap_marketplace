@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/book_listing.dart';
+import '../providers/auth_provider.dart';
 import '../providers/books_provider.dart';
-import '../providers/my_listings_provider.dart';
 import '../widgets/condition_badge.dart';
 import '../widgets/loading_widget.dart';
 
@@ -79,14 +79,14 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     );
     if (confirmed == true && mounted) {
       await ref.read(booksProvider.notifier).deleteListing(widget.id);
-      await ref.read(myListingsProvider.notifier).remove(widget.id);
       if (mounted) context.go('/');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = ref.watch(myListingsProvider).contains(widget.id);
+    final currentUser = ref.watch(currentUserProvider);
+    final isOwner = currentUser != null && _book?.ownerId == currentUser.uid;
 
     return Scaffold(
       appBar: AppBar(
