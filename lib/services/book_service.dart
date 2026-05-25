@@ -46,12 +46,6 @@ class BookService {
   ) =>
       books.where((book) => book.category == category).toList();
 
-  List<BookListing> filterByCondition(
-    List<BookListing> books,
-    BookCondition condition,
-  ) =>
-      books.where((book) => book.condition == condition).toList();
-
   List<BookListing> filterByType(
     List<BookListing> books,
     ListingType type,
