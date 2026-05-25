@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -63,9 +64,16 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
+            title: const Text('About BookSwap'),
+            subtitle: const Text('Team, features & technology'),
+            leading: const Icon(Icons.info_outline),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/about'),
+          ),
+          ListTile(
             title: const Text('App Version'),
             subtitle: const Text('1.0.0'),
-            leading: const Icon(Icons.info),
+            leading: const Icon(Icons.tag),
           ),
           ListTile(
             title: const Text('Privacy Policy'),
