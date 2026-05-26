@@ -4,56 +4,144 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/book_listing.dart';
+import '../providers/auth_provider.dart';
 import '../providers/books_provider.dart';
 import '../widgets/condition_badge.dart';
 import '../widgets/loading_widget.dart';
 
-class BookDetailScreen extends ConsumerWidget {
+class BookDetailScreen extends ConsumerStatefulWidget {
   final String id;
 
   const BookDetailScreen({super.key, required this.id});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bookService = ref.read(bookServiceProvider);
+  ConsumerState<BookDetailScreen> createState() => _BookDetailScreenState();
+}
+
+class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
+  BookListing? _book;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBook();
+  }
+
+  Future<void> _loadBook() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final book =
+          await ref.read(bookServiceProvider).getBookById(widget.id);
+      if (mounted) {
+        setState(() {
+          _book = book;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _refresh() => _loadBook();
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Listing'),
+        content: Text('Remove "${_book!.title}" permanently?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(booksProvider.notifier).deleteListing(widget.id);
+      if (mounted) context.go('/');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider);
+    final isOwner = currentUser != null && _book?.ownerId == currentUser.uid;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Book Details'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/search'),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
         ),
+        actions: [
+          if (isOwner && _book != null) ...[
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit',
+              onPressed: () async {
+                await context.push('/add', extra: _book);
+                _refresh();
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete',
+              onPressed: _confirmDelete,
+            ),
+          ],
+        ],
       ),
-      body: FutureBuilder(
-        future: bookService.getBookById(id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingWidget();
-          }
+      body: _buildBody(context),
+    );
+  }
 
-          if (!snapshot.hasData) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  const Text('Book not found'),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Go Back'),
-                  ),
-                ],
-              ),
-            );
-          }
+  Widget _buildBody(BuildContext context) {
+    if (_isLoading) return const LoadingWidget();
 
-          final book = snapshot.data!;
-          final dateFormat = DateFormat('MMM dd, yyyy');
+    if (_error != null || _book == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(_error ?? 'Book not found'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/'),
+              child: const Text('Go Back'),
+            ),
+          ],
+        ),
+      );
+    }
 
-          return SingleChildScrollView(
+    final book = _book!;
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,14 +151,12 @@ class BookDetailScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 300,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        const LoadingWidget(),
-                    errorWidget: (context, url, error) =>
-                        Container(
-                          color: Colors.grey[300],
-                          height: 300,
-                          child: const Icon(Icons.book, size: 80),
-                        ),
+                    placeholder: (context, url) => const LoadingWidget(),
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.grey[300],
+                      height: 300,
+                      child: const Icon(Icons.book, size: 80),
+                    ),
                   )
                 else
                   Container(
@@ -93,7 +179,8 @@ class BookDetailScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         book.author,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Colors.grey[600],
                         ),
                       ),
@@ -222,13 +309,10 @@ class BookDetailScreen extends ConsumerWidget {
                 ),
               ],
             ),
-          );
-        },
-      ),
     );
   }
 
-  void _contactSeller(BuildContext context, dynamic book) {
+  void _contactSeller(BuildContext context, BookListing book) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

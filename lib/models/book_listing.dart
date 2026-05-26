@@ -118,6 +118,7 @@ class BookListing {
   final String location;
   final DateTime datePosted;
   final bool isAvailable;
+  final String? ownerId;
 
   BookListing({
     required this.id,
@@ -135,6 +136,7 @@ class BookListing {
     required this.location,
     required this.datePosted,
     this.isAvailable = true,
+    this.ownerId,
   });
 
   factory BookListing.fromJson(Map<String, dynamic> json) {
@@ -154,6 +156,7 @@ class BookListing {
       location: json['location'] as String,
       datePosted: DateTime.parse(json['datePosted'] as String),
       isAvailable: (json['isAvailable'] as bool?) ?? true,
+      ownerId: json['ownerId'] as String?,
     );
   }
 
@@ -173,6 +176,7 @@ class BookListing {
     'location': location,
     'datePosted': datePosted.toIso8601String(),
     'isAvailable': isAvailable,
+    'ownerId': ownerId,
   };
 
   String? get coverUrl =>
@@ -196,6 +200,7 @@ class BookListing {
     String? location,
     DateTime? datePosted,
     bool? isAvailable,
+    String? ownerId,
   }) =>
     BookListing(
       id: id ?? this.id,
@@ -213,5 +218,6 @@ class BookListing {
       location: location ?? this.location,
       datePosted: datePosted ?? this.datePosted,
       isAvailable: isAvailable ?? this.isAvailable,
+      ownerId: ownerId ?? this.ownerId,
     );
 }

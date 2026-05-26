@@ -173,7 +173,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
     try {
       // Save to Firestore if available
       if (_service is FirestoreBookService) {
-        await (_service as FirestoreBookService).saveBook(listing);
+        await _service.saveBook(listing);
       }
       final updated = [listing, ..._allBooks];
       _allBooks = updated;
@@ -185,6 +185,44 @@ class BooksNotifier extends StateNotifier<BooksState> {
       );
     } catch (e) {
       state = state.copyWith(error: 'Failed to add listing: $e');
+    }
+  }
+
+  Future<void> updateListing(BookListing updated) async {
+    try {
+      if (_service is FirestoreBookService) {
+        await _service.updateBook(updated);
+      }
+      _allBooks = [
+        for (final b in _allBooks) b.id == updated.id ? updated : b,
+      ];
+      _filteredBooks = _applyFilters(_allBooks);
+      final count = state.books.length;
+      final page = _filteredBooks.take(count > 0 ? count : _pageSize).toList();
+      state = state.copyWith(
+        books: page,
+        hasMore: _filteredBooks.length > page.length,
+      );
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to update listing: $e');
+    }
+  }
+
+  Future<void> deleteListing(String id) async {
+    try {
+      if (_service is FirestoreBookService) {
+        await _service.deleteBook(id);
+      }
+      _allBooks = _allBooks.where((b) => b.id != id).toList();
+      _filteredBooks = _applyFilters(_allBooks);
+      final count = (state.books.length - 1).clamp(0, _filteredBooks.length);
+      final page = _filteredBooks.take(count > 0 ? count : _pageSize).toList();
+      state = state.copyWith(
+        books: page,
+        hasMore: _filteredBooks.length > page.length,
+      );
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to delete listing: $e');
     }
   }
 

@@ -58,6 +58,17 @@ class FirestoreBookService extends BookService {
     }
   }
 
+  Future<void> updateBook(BookListing book) async {
+    try {
+      await _firestore
+          .collection(_booksCollection)
+          .doc(book.id)
+          .set(book.toJson());
+    } catch (e) {
+      throw Exception('Failed to update book: $e');
+    }
+  }
+
   Future<void> deleteBook(String id) async {
     try {
       await _firestore.collection(_booksCollection).doc(id).delete();

@@ -1,12 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../models/book_listing.dart';
+import '../providers/auth_provider.dart';
 import '../providers/books_provider.dart';
 import '../utils/validators.dart';
 
 class AddListingScreen extends ConsumerStatefulWidget {
-  const AddListingScreen({super.key});
+  final BookListing? initialListing;
+
+  const AddListingScreen({super.key, this.initialListing});
 
   @override
   ConsumerState<AddListingScreen> createState() => _AddListingScreenState();
@@ -24,22 +28,35 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
       _imageUrlController,
       _sellerNameController;
 
-  BookCondition _selectedCondition = BookCondition.good;
-  ListingType _selectedType = ListingType.sale;
-  BookCategory _selectedCategory = BookCategory.other;
+  late BookCondition _selectedCondition;
+  late ListingType _selectedType;
+  late BookCategory _selectedCategory;
+
+  bool get _isEditing => widget.initialListing != null;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController();
-    _authorController = TextEditingController();
-    _priceController = TextEditingController();
-    _descriptionController = TextEditingController();
-    _locationController = TextEditingController();
-    _contactController = TextEditingController();
-    _isbnController = TextEditingController();
-    _imageUrlController = TextEditingController();
-    _sellerNameController = TextEditingController();
+    final b = widget.initialListing;
+    final user = ref.read(currentUserProvider);
+    _titleController = TextEditingController(text: b?.title ?? '');
+    _authorController = TextEditingController(text: b?.author ?? '');
+    _priceController = TextEditingController(
+      text: (b?.type == ListingType.sale && b?.price != null)
+          ? b!.price.toString()
+          : '',
+    );
+    _descriptionController = TextEditingController(text: b?.description ?? '');
+    _locationController = TextEditingController(text: b?.location ?? '');
+    _contactController = TextEditingController(
+        text: b?.sellerContact ?? user?.email ?? '');
+    _isbnController = TextEditingController(text: b?.isbn ?? '');
+    _imageUrlController = TextEditingController(text: b?.imageUrl ?? '');
+    _sellerNameController = TextEditingController(
+        text: b?.sellerName ?? user?.displayName ?? '');
+    _selectedCondition = b?.condition ?? BookCondition.good;
+    _selectedType = b?.type ?? ListingType.sale;
+    _selectedCategory = b?.category ?? BookCategory.other;
   }
 
   @override
@@ -57,55 +74,88 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
   }
 
   void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final newListing = BookListing(
-        id: FirebaseFirestore.instance.collection('books').doc().id,
-        title: _titleController.text,
-        author: _authorController.text,
-        isbn: _isbnController.text.isEmpty ? null : _isbnController.text,
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_isEditing) {
+      final updated = widget.initialListing!.copyWith(
+        title: _titleController.text.trim(),
+        author: _authorController.text.trim(),
+        isbn: _isbnController.text.isEmpty ? null : _isbnController.text.trim(),
         price: _selectedType == ListingType.sale
-            ? double.parse(_priceController.text.isEmpty ? '0' : _priceController.text)
+            ? double.parse(
+                _priceController.text.isEmpty ? '0' : _priceController.text)
             : 0,
         condition: _selectedCondition,
         type: _selectedType,
         category: _selectedCategory,
-        description: _descriptionController.text,
-        sellerName: _sellerNameController.text,
-        sellerContact: _contactController.text,
+        description: _descriptionController.text.trim(),
+        sellerName: _sellerNameController.text.trim(),
+        sellerContact: _contactController.text.trim(),
         imageUrl: _imageUrlController.text.isEmpty
             ? null
-            : _imageUrlController.text,
-        location: _locationController.text,
-        datePosted: DateTime.now(),
+            : _imageUrlController.text.trim(),
+        location: _locationController.text.trim(),
       );
-
+      ref.read(booksProvider.notifier).updateListing(updated);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Listing updated!')),
+      );
+      context.pop();
+    } else {
+      final user = ref.read(currentUserProvider);
+      final newListing = BookListing(
+        id: FirebaseFirestore.instance.collection('books').doc().id,
+        title: _titleController.text.trim(),
+        author: _authorController.text.trim(),
+        isbn: _isbnController.text.isEmpty ? null : _isbnController.text.trim(),
+        price: _selectedType == ListingType.sale
+            ? double.parse(
+                _priceController.text.isEmpty ? '0' : _priceController.text)
+            : 0,
+        condition: _selectedCondition,
+        type: _selectedType,
+        category: _selectedCategory,
+        description: _descriptionController.text.trim(),
+        sellerName: _sellerNameController.text.trim(),
+        sellerContact: _contactController.text.trim(),
+        imageUrl: _imageUrlController.text.isEmpty
+            ? null
+            : _imageUrlController.text.trim(),
+        location: _locationController.text.trim(),
+        datePosted: DateTime.now(),
+        ownerId: user?.uid,
+      );
       ref.read(booksProvider.notifier).addListing(newListing);
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Listing added successfully!')),
       );
-
       _formKey.currentState!.reset();
       _clearControllers();
     }
   }
 
   void _clearControllers() {
-    _titleController.clear();
-    _authorController.clear();
-    _priceController.clear();
-    _descriptionController.clear();
-    _locationController.clear();
-    _contactController.clear();
-    _isbnController.clear();
-    _imageUrlController.clear();
-    _sellerNameController.clear();
+    for (final c in [
+      _titleController,
+      _authorController,
+      _priceController,
+      _descriptionController,
+      _locationController,
+      _contactController,
+      _isbnController,
+      _imageUrlController,
+      _sellerNameController,
+    ]) {
+      c.clear();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Book Listing')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Listing' : 'Add Book Listing'),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -286,7 +336,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _submitForm,
-                    child: const Text('Post Listing'),
+                    child: Text(_isEditing ? 'Save Changes' : 'Post Listing'),
                   ),
                 ),
               ],
