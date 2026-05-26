@@ -150,6 +150,25 @@ class BooksNotifier extends StateNotifier<BooksState> {
     );
   }
 
+  void clearFilters() {
+    state = BooksState(
+      books: state.books,
+      isLoading: state.isLoading,
+      isLoadingMore: state.isLoadingMore,
+      error: state.error,
+      hasMore: state.hasMore,
+      searchQuery: '',
+      filterCategory: null,
+      filterType: null,
+    );
+    _filteredBooks = _applyFilters(_allBooks);
+    final page = _filteredBooks.take(_pageSize).toList();
+    state = state.copyWith(
+      books: page,
+      hasMore: _filteredBooks.length > _pageSize,
+    );
+  }
+
   Future<void> addListing(BookListing listing) async {
     try {
       // Save to Firestore if available

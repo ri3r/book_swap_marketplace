@@ -24,6 +24,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    // Initialize with any pre-selected category from the provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final booksState = ref.read(booksProvider);
+      setState(() {
+        _selectedCategory = booksState.filterCategory;
+        _selectedType = booksState.filterType;
+      });
+    });
   }
 
   @override
@@ -52,6 +60,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Search your next Book',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -137,7 +156,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   onTap: () => context.go('/book/${book.id}'),
                 ),
               )),
-            ] else if (_searchController.text.isNotEmpty)
+            ] else if (_searchController.text.isNotEmpty ||
+                _selectedCategory != null ||
+                _selectedType != null)
               const EmptyStateWidget(
                 title: 'No Results',
                 message: 'Try adjusting your search or filters',

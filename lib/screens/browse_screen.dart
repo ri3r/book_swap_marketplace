@@ -2,52 +2,67 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/books_provider.dart';
+import '../models/book_listing.dart';
 import '../widgets/book_list_tile.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/app_error_widget.dart';
 import '../widgets/empty_state_widget.dart';
 
-class BrowseScreen extends ConsumerWidget {
+class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
+
+  @override
+  ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
+}
+
+class _BrowseScreenState extends ConsumerState<BrowseScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear any filters when returning to the Browse screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(booksProvider.notifier).clearFilters();
+    });
+  }
 
   static const _heroImageUrl =
       'https://images.unsplash.com/photo-1551269901-5c5e14c25df7?auto=format&fit=crop&w=400&q=80';
 
-  static final _categories = [
-    _BrowseCategory(
-      title: 'Trending',
-      icon: Icons.local_fire_department,
-      backgroundColor: Color(0xFFFFF1E5),
-      iconColor: Color(0xFFEA580C),
-    ),
-    _BrowseCategory(
-      title: 'Fiction',
-      icon: Icons.menu_book,
+  static final _genreCategories = [
+    (
+      category: BookCategory.fiction,
       backgroundColor: Color(0xFFE8F0FE),
       iconColor: Color(0xFF2563EB),
     ),
-    _BrowseCategory(
-      title: 'Romance',
-      icon: Icons.favorite,
+    (
+      category: BookCategory.childrens,
       backgroundColor: Color(0xFFFED7E2),
       iconColor: Color(0xFFDB2777),
     ),
-    _BrowseCategory(
-      title: 'Sci-Fi',
-      icon: Icons.star,
-      backgroundColor: Color(0xFFEDE9FE),
-      iconColor: Color(0xFF7C3AED),
+    (
+      category: BookCategory.arts,
+      backgroundColor: Color(0xFFE0E7FF),
+      iconColor: Color(0xFF6366F1),
     ),
-    _BrowseCategory(
-      title: 'Explore',
-      icon: Icons.explore,
-      backgroundColor: Color(0xFFE6F6F1),
-      iconColor: Color(0xFF0F766E),
+    (
+      category: BookCategory.science,
+      backgroundColor: Color(0xFFF0FDF4),
+      iconColor: Color(0xFF16A34A),
+    ),
+    (
+      category: BookCategory.technology,
+      backgroundColor: Color(0xFFFCE7F3),
+      iconColor: Color(0xFFBE185D),
+    ),
+    (
+      category: BookCategory.history,
+      backgroundColor: Color(0xFFFEF3C7),
+      iconColor: Color(0xFFD97706),
     ),
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final booksState = ref.watch(booksProvider);
     final notifier = ref.read(booksProvider.notifier);
     final theme = Theme.of(context);
@@ -177,42 +192,49 @@ class BrowseScreen extends ConsumerWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: _categories.length,
+          itemCount: _genreCategories.length,
           separatorBuilder: (context, _) => const SizedBox(width: 12),
           itemBuilder: (context, index) {
-            final category = _categories[index];
-            return Container(
-              width: 96,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: category.backgroundColor,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: category.iconColor.withAlpha((0.16 * 255).round()),
-                      borderRadius: BorderRadius.circular(14),
+            final item = _genreCategories[index];
+            final category = item.category;
+            return GestureDetector(
+              onTap: () {
+                ref.read(booksProvider.notifier).setFilterCategory(category);
+                context.go('/search');
+              },
+              child: Container(
+                width: 96,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: item.backgroundColor,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: item.iconColor.withAlpha((0.16 * 255).round()),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        category.icon,
+                        color: item.iconColor,
+                        size: 20,
+                      ),
                     ),
-                    child: Icon(
-                      category.icon,
-                      color: category.iconColor,
-                      size: 20,
+                    const SizedBox(height: 14),
+                    Text(
+                      category.displayName,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    category.title,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -320,16 +342,3 @@ class BrowseScreen extends ConsumerWidget {
   }
 }
 
-class _BrowseCategory {
-  final String title;
-  final IconData icon;
-  final Color backgroundColor;
-  final Color iconColor;
-
-  const _BrowseCategory({
-    required this.title,
-    required this.icon,
-    required this.backgroundColor,
-    required this.iconColor,
-  });
-}
