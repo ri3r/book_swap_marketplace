@@ -397,7 +397,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Container(
             height: 84,
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
