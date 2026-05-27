@@ -17,8 +17,6 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   late TextEditingController _searchController;
   String? _searchError;
-  BookCategory? _selectedCategory;
-  ListingType? _selectedType;
 
   @override
   void initState() {
@@ -45,6 +43,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final booksState = ref.watch(booksProvider);
+    final selectedCategory = booksState.filterCategory;
+    final selectedType = booksState.filterType;
 
     return SingleChildScrollView(
       child: Padding(
@@ -75,22 +75,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               children: [
                 FilterChip(
                   label: const Text('All'),
-                  selected: _selectedCategory == null,
-                  onSelected: (selected) {
-                    setState(() => _selectedCategory = null);
-                    ref.read(booksProvider.notifier).setFilterCategory(null);
-                  },
+                  selected: selectedCategory == null,
+                  onSelected: (_) =>
+                      ref.read(booksProvider.notifier).setFilterCategory(null),
                 ),
                 ...BookCategory.values.map((cat) => FilterChip(
                   label: Text(cat.displayName),
-                  selected: _selectedCategory == cat,
-                  onSelected: (selected) {
-                    setState(
-                        () => _selectedCategory = selected ? cat : null);
-                    ref
-                        .read(booksProvider.notifier)
-                        .setFilterCategory(selected ? cat : null);
-                  },
+                  selected: selectedCategory == cat,
+                  onSelected: (selected) => ref
+                      .read(booksProvider.notifier)
+                      .setFilterCategory(selected ? cat : null),
                 )),
               ],
             ),
@@ -105,21 +99,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               children: [
                 FilterChip(
                   label: const Text('All'),
-                  selected: _selectedType == null,
-                  onSelected: (selected) {
-                    setState(() => _selectedType = null);
-                    ref.read(booksProvider.notifier).setFilterType(null);
-                  },
+                  selected: selectedType == null,
+                  onSelected: (_) =>
+                      ref.read(booksProvider.notifier).setFilterType(null),
                 ),
                 ...ListingType.values.map((type) => FilterChip(
                   label: Text(type.displayName),
-                  selected: _selectedType == type,
-                  onSelected: (selected) {
-                    setState(() => _selectedType = selected ? type : null);
-                    ref
-                        .read(booksProvider.notifier)
-                        .setFilterType(selected ? type : null);
-                  },
+                  selected: selectedType == type,
+                  onSelected: (selected) => ref
+                      .read(booksProvider.notifier)
+                      .setFilterType(selected ? type : null),
                 )),
               ],
             ),
