@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/books_provider.dart';
+import '../providers/search_filters_provider.dart';
 import '../models/book_listing.dart';
 import '../widgets/book_list_tile.dart';
 import '../widgets/loading_widget.dart';
@@ -224,6 +225,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
             final category = item.category;
             return GestureDetector(
               onTap: () {
+                ref.read(searchFiltersProvider.notifier).setCategory(category);
                 ref.read(booksProvider.notifier).setFilterCategory(category);
                 context.go('/search');
               },
