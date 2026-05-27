@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,9 +24,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
       ref.read(booksProvider.notifier).clearFilters();
     });
   }
-
-  static const _heroImageUrl =
-      'https://images.unsplash.com/photo-1551269901-5c5e14c25df7?auto=format&fit=crop&w=400&q=80';
 
   static final _genreCategories = [
     (
@@ -88,114 +86,125 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
             borderRadius: BorderRadius.circular(32),
           ),
           padding: const EdgeInsets.all(24),
-          child: Stack(
-            clipBehavior: Clip.none,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withAlpha(
+                          (0.08 * 255).round(),
+                        ),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.star, size: 16, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Staff Pick',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    decoration: BoxDecoration(
+                    const SizedBox(height: 16),
+                    Text(
+                      featuredBook.title,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'By ${featuredBook.author} - Available for swap.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.textTheme.bodyMedium?.color?.withAlpha(
+                          (0.74 * 255).round(),
+                        ),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 18),
+                    FilledButton.tonal(
+                      onPressed: () => context.go('/book/${featuredBook.id}'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        backgroundColor: theme.brightness == Brightness.light
+                            ? Colors.white
+                            : colorScheme.primary,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('View Details'),
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: theme.brightness == Brightness.light
+                                  ? const Color(0xFFF1F5F9)
+                                  : Colors.white.withAlpha(220),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(
+                              Icons.play_arrow,
+                              size: 16,
+                              color: theme.brightness == Brightness.light
+                                  ? colorScheme.onSurface
+                                  : colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (featuredBook.coverUrl != null) ...[
+                const SizedBox(width: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: featuredBook.coverUrl!,
+                    width: 90,
+                    height: 130,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 90,
+                      height: 130,
                       color: theme.colorScheme.onSurface.withAlpha(
                         (0.08 * 255).round(),
                       ),
-                      borderRadius: BorderRadius.circular(999),
+                      child: const Icon(Icons.book, size: 36),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star, size: 16, color: colorScheme.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Staff Pick',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    featuredBook.title,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'By ${featuredBook.author} - Available for swap.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color?.withAlpha(
-                        (0.74 * 255).round(),
-                      ),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 18),
-                  FilledButton.tonal(
-                    onPressed: () => context.go('/book/${featuredBook.id}'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
-                      ),
-                      backgroundColor: theme.brightness == Brightness.light
-                          ? Colors.white
-                          : colorScheme.primary,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('View Details'),
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: theme.brightness == Brightness.light
-                                ? const Color(0xFFF1F5F9)
-                                : Colors.white.withAlpha(220),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(
-                            Icons.play_arrow,
-                            size: 16,
-                            color: theme.brightness == Brightness.light
-                                ? colorScheme.onSurface
-                                : colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Positioned(
-                right: -8,
-                bottom: -12,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: SizedBox(
-                    width: 140,
-                    height: 170,
-                    child: Image.network(_heroImageUrl, fit: BoxFit.cover),
+                    errorWidget: (context, url, error) => const SizedBox.shrink(),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
