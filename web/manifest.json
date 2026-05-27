@@ -1,6 +1,6 @@
 {
-    "name": "boook_marketplace",
-    "short_name": "boook_marketplace",
+    "name": "BookHero",
+    "short_name": "BookHero",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

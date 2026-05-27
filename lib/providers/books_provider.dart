@@ -7,6 +7,7 @@ const int _pageSize = 10;
 
 class BooksState {
   final List<BookListing> books;
+  final List<BookListing> allBooks;
   final bool isLoading;
   final bool isLoadingMore;
   final String? error;
@@ -17,6 +18,7 @@ class BooksState {
 
   const BooksState({
     this.books = const [],
+    this.allBooks = const [],
     this.isLoading = false,
     this.isLoadingMore = false,
     this.error,
@@ -28,6 +30,7 @@ class BooksState {
 
   BooksState copyWith({
     List<BookListing>? books,
+    List<BookListing>? allBooks,
     bool? isLoading,
     bool? isLoadingMore,
     String? error,
@@ -37,6 +40,7 @@ class BooksState {
     ListingType? filterType,
   }) => BooksState(
     books: books ?? this.books,
+    allBooks: allBooks ?? this.allBooks,
     isLoading: isLoading ?? this.isLoading,
     isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     error: error ?? this.error,
@@ -81,6 +85,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
       _filteredBooks = _applyFilters(_allBooks);
       final page = _filteredBooks.take(_pageSize).toList();
       state = state.copyWith(
+        allBooks: _allBooks,
         books: page,
         isLoading: false,
         hasMore: _filteredBooks.length > _pageSize,
@@ -115,6 +120,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
   void setFilterCategory(BookCategory? category) {
     state = BooksState(
       books: state.books,
+      allBooks: _allBooks,
       isLoading: state.isLoading,
       isLoadingMore: state.isLoadingMore,
       error: state.error,
@@ -134,6 +140,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
   void setFilterType(ListingType? type) {
     state = BooksState(
       books: state.books,
+      allBooks: _allBooks,
       isLoading: state.isLoading,
       isLoadingMore: state.isLoadingMore,
       error: state.error,
@@ -153,6 +160,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
   void clearFilters() {
     state = BooksState(
       books: state.books,
+      allBooks: _allBooks,
       isLoading: state.isLoading,
       isLoadingMore: state.isLoadingMore,
       error: state.error,
@@ -180,11 +188,13 @@ class BooksNotifier extends StateNotifier<BooksState> {
       _filteredBooks = _applyFilters(_allBooks);
       final page = _filteredBooks.take(_pageSize).toList();
       state = state.copyWith(
+        allBooks: _allBooks,
         books: page,
         hasMore: _filteredBooks.length > _pageSize,
       );
     } catch (e) {
       state = state.copyWith(error: 'Failed to add listing: $e');
+      rethrow;
     }
   }
 
@@ -200,6 +210,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
       final count = state.books.length;
       final page = _filteredBooks.take(count > 0 ? count : _pageSize).toList();
       state = state.copyWith(
+        allBooks: _allBooks,
         books: page,
         hasMore: _filteredBooks.length > page.length,
       );
@@ -218,6 +229,7 @@ class BooksNotifier extends StateNotifier<BooksState> {
       final count = (state.books.length - 1).clamp(0, _filteredBooks.length);
       final page = _filteredBooks.take(count > 0 ? count : _pageSize).toList();
       state = state.copyWith(
+        allBooks: _allBooks,
         books: page,
         hasMore: _filteredBooks.length > page.length,
       );

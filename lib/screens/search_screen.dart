@@ -146,7 +146,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: BookListTile(
                   book: book,
-                  onTap: () => context.go('/book/${book.id}'),
+                  onTap: () => context.push('/book/${book.id}'),
                 ),
               )),
             ] else if (_searchController.text.isNotEmpty ||

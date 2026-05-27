@@ -6,11 +6,17 @@ import '../models/book_listing.dart';
 import '../providers/auth_provider.dart';
 import '../providers/books_provider.dart';
 import '../utils/validators.dart';
+import '../widgets/login_required_widget.dart';
 
 class AddListingScreen extends ConsumerStatefulWidget {
   final BookListing? initialListing;
+  final bool showAppBar;
 
-  const AddListingScreen({super.key, this.initialListing});
+  const AddListingScreen({
+    super.key,
+    this.initialListing,
+    this.showAppBar = true,
+  });
 
   @override
   ConsumerState<AddListingScreen> createState() => _AddListingScreenState();
@@ -73,7 +79,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
     super.dispose();
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_isEditing) {
@@ -96,7 +102,8 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
             : _imageUrlController.text.trim(),
         location: _locationController.text.trim(),
       );
-      ref.read(booksProvider.notifier).updateListing(updated);
+      await ref.read(booksProvider.notifier).updateListing(updated);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Listing updated!')),
       );
@@ -125,37 +132,39 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
         datePosted: DateTime.now(),
         ownerId: user?.uid,
       );
-      ref.read(booksProvider.notifier).addListing(newListing);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Listing added successfully!')),
-      );
-      _formKey.currentState!.reset();
-      _clearControllers();
-    }
-  }
-
-  void _clearControllers() {
-    for (final c in [
-      _titleController,
-      _authorController,
-      _priceController,
-      _descriptionController,
-      _locationController,
-      _contactController,
-      _isbnController,
-      _imageUrlController,
-      _sellerNameController,
-    ]) {
-      c.clear();
+      try {
+        await ref.read(booksProvider.notifier).addListing(newListing);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Listing added successfully!')),
+        );
+        context.go('/book/${newListing.id}');
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to add listing.')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final title = _isEditing ? 'Edit Listing' : 'Add Book Listing';
+    final user = ref.watch(currentUserProvider);
+
+    if (user == null) {
+      return const Scaffold(
+        body: LoginRequiredWidget(
+          title: 'Sign in to add books',
+          message: 'Create an account or sign in to list books on BookHero.',
+          icon: Icons.add_circle_outline,
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Listing' : 'Add Book Listing'),
-      ),
+      appBar: widget.showAppBar ? AppBar(title: Text(title)) : null,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -164,6 +173,14 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (!widget.showAppBar) ...[
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 TextFormField(
                   controller: _titleController,
                   decoration: InputDecoration(
@@ -221,7 +238,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<BookCategory>(
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: 'Category *',
                     border: OutlineInputBorder(
@@ -242,7 +259,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<BookCondition>(
-                  value: _selectedCondition,
+                  initialValue: _selectedCondition,
                   decoration: InputDecoration(
                     labelText: 'Condition *',
                     border: OutlineInputBorder(
@@ -263,7 +280,7 @@ class _AddListingScreenState extends ConsumerState<AddListingScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<ListingType>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   decoration: InputDecoration(
                     labelText: 'Listing Type *',
                     border: OutlineInputBorder(

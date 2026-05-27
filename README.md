@@ -1,4 +1,4 @@
-# BookSwap — Book Marketplace App
+# BookHero — Book Marketplace App
 
 A Flutter application that lets users browse, buy, swap, and give away books within their community. Users can post listings with title, author, condition, price, and contact details. The app supports infinite scrolling, search, filtering, and persistent dark/light theme preferences.
 

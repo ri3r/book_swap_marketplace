@@ -6,6 +6,7 @@ import '../screens/browse_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/add_listing_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/my_listings_screen.dart';
 import '../screens/book_detail_screen.dart';
 import '../screens/about_screen.dart';
 import '../screens/login_screen.dart';
@@ -18,8 +19,9 @@ final GoRouter router = GoRouter(
     final isAuthRoute =
         state.matchedLocation == '/login' ||
         state.matchedLocation == '/register';
+    final requiresLogin = state.matchedLocation.endsWith('/edit');
 
-    if (!isLoggedIn && !isAuthRoute) return '/login';
+    if (!isLoggedIn && requiresLogin) return '/login';
     if (isLoggedIn && isAuthRoute) return '/';
     return null;
   },
@@ -52,12 +54,18 @@ final GoRouter router = GoRouter(
           name: 'add',
           builder: (context, state) => AddListingScreen(
             initialListing: state.extra as BookListing?,
+            showAppBar: false,
           ),
         ),
         GoRoute(
           path: '/settings',
           name: 'settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/my-listings',
+          name: 'myListings',
+          builder: (context, state) => const MyListingsScreen(),
         ),
       ],
     ),
@@ -66,6 +74,13 @@ final GoRouter router = GoRouter(
       name: 'bookDetail',
       builder: (context, state) => BookDetailScreen(
         id: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/book/:id/edit',
+      name: 'editBook',
+      builder: (context, state) => AddListingScreen(
+        initialListing: state.extra as BookListing?,
       ),
     ),
     GoRoute(

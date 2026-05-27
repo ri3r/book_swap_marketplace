@@ -8,7 +8,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About BookSwap'),
+        title: const Text('About BookHero'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -36,7 +36,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'BookSwap',
+                      'BookHero',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
@@ -57,7 +57,7 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'BookSwap is a mobile application designed to help book '
+                'BookHero is a mobile application designed to help book '
                 'enthusiasts swap and buy books with others in their community. '
                 'Browse through a wide selection of books, post your own listings, '
                 'and connect with fellow readers.',

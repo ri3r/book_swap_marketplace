@@ -12,11 +12,31 @@ class SettingsScreen extends ConsumerWidget {
     final currentTheme = ref.watch(themeProvider);
     final themeNotifier = ref.read(themeProvider.notifier);
     final user = ref.watch(currentUserProvider);
+    final previousLocation =
+        GoRouterState.of(context).uri.queryParameters['from'];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                IconButton(
+                  tooltip: 'Back',
+                  onPressed: () => context.go(previousLocation ?? '/'),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Settings',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
           // ── Account ─────────────────────────────────────────────
           if (user != null) ...[
             _SectionHeader('Account'),
@@ -135,7 +155,7 @@ class SettingsScreen extends ConsumerWidget {
           // ── About ────────────────────────────────────────────────
           _SectionHeader('About'),
           ListTile(
-            title: const Text('About BookSwap'),
+            title: const Text('About BookHero'),
             subtitle: const Text('Team, features & technology'),
             leading: const Icon(Icons.info_outline),
             trailing: const Icon(Icons.chevron_right),
@@ -237,6 +257,7 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (confirmed == true) {
       await ref.read(authServiceProvider).signOut();
+      if (context.mounted) context.go('/login');
     }
   }
 

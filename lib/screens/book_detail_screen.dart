@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../providers/books_provider.dart';
 import '../widgets/condition_badge.dart';
 import '../widgets/loading_widget.dart';
+import '../widgets/login_required_dialog.dart';
 
 class BookDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -101,7 +102,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit',
               onPressed: () async {
-                await context.push('/add', extra: _book);
+                await context.push('/book/${_book!.id}/edit', extra: _book);
                 _refresh();
               },
             ),
@@ -140,6 +141,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     }
 
     final book = _book!;
+    final currentUser = ref.watch(currentUserProvider);
     final dateFormat = DateFormat('MMM dd, yyyy');
     return SingleChildScrollView(
             child: Column(
@@ -268,9 +270,13 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                                 value: book.sellerName,
                               ),
                               _InfoRow(
-                                icon: Icons.email,
+                                icon: currentUser == null
+                                    ? Icons.lock_outline
+                                    : Icons.email,
                                 label: 'Email',
-                                value: book.sellerContact,
+                                value: currentUser == null
+                                    ? 'Sign in to view'
+                                    : book.sellerContact,
                               ),
                               _InfoRow(
                                 icon: Icons.location_on,
@@ -298,7 +304,18 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () => _contactSeller(context, book),
+                          onPressed: () {
+                            if (currentUser == null) {
+                              showLoginRequiredDialog(
+                                context,
+                                title: 'Sign in to contact sellers',
+                                message:
+                                    'Create an account or sign in to message this seller.',
+                              );
+                              return;
+                            }
+                            _contactSeller(context, book);
+                          },
                           icon: const Icon(Icons.mail),
                           label: const Text('Contact Seller'),
                         ),

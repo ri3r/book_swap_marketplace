@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/books_provider.dart';
 import '../providers/search_filters_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/book_listing.dart';
 import '../widgets/book_list_tile.dart';
 import '../widgets/loading_widget.dart';
@@ -62,13 +63,17 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   @override
   Widget build(BuildContext context) {
     final booksState = ref.watch(booksProvider);
+    final currentUser = ref.watch(currentUserProvider);
     final notifier = ref.read(booksProvider.notifier);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final visibleBooks = booksState.books
+        .where((book) => currentUser == null || book.ownerId != currentUser.uid)
+        .toList();
 
     Widget heroCard() {
       // Find first swap book to display as featured
-      final swapBooks = booksState.books
+      final swapBooks = visibleBooks
           .where((book) => book.type == ListingType.swap)
           .toList();
       final featuredBook = swapBooks.isNotEmpty ? swapBooks.first : null;
@@ -78,7 +83,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
       }
 
       return GestureDetector(
-        onTap: () => context.go('/book/${featuredBook.id}'),
+        onTap: () => context.push('/book/${featuredBook.id}'),
         child: Container(
           decoration: BoxDecoration(
             color: theme.brightness == Brightness.light
@@ -143,7 +148,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                     ),
                     const SizedBox(height: 18),
                     FilledButton.tonal(
-                      onPressed: () => context.go('/book/${featuredBook.id}'),
+                      onPressed: () =>
+                          context.push('/book/${featuredBook.id}'),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -202,7 +208,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                       ),
                       child: const Icon(Icons.book, size: 36),
                     ),
-                    errorWidget: (context, url, error) => const SizedBox.shrink(),
+                    errorWidget: (context, url, error) =>
+                        const SizedBox.shrink(),
                   ),
                 ),
               ],
@@ -299,7 +306,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
               message: booksState.error!,
               onRetry: () => notifier.retry(),
             )
-          : booksState.books.isEmpty
+          : visibleBooks.isEmpty
           ? const EmptyStateWidget(
               title: 'No Books Available',
               message: 'Start by adding a listing or adjusting your filters',
@@ -344,12 +351,12 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                   ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final book = booksState.books[index];
+                      final book = visibleBooks[index];
                       return BookListTile(
                         book: book,
-                        onTap: () => context.go('/book/${book.id}'),
+                        onTap: () => context.push('/book/${book.id}'),
                       );
-                    }, childCount: booksState.books.length),
+                    }, childCount: visibleBooks.length),
                   ),
                   if (booksState.isLoadingMore)
                     SliverToBoxAdapter(

@@ -73,7 +73,6 @@ void main() {
     });
 
     test('loads books on initialization', () async {
-      final notifier = container.read(booksProvider.notifier);
       await Future.delayed(const Duration(milliseconds: 100));
 
       final state = container.read(booksProvider);
