@@ -2,171 +2,203 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/books_provider.dart';
+import '../models/book_listing.dart';
 import '../widgets/book_list_tile.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/app_error_widget.dart';
 import '../widgets/empty_state_widget.dart';
 
-class BrowseScreen extends ConsumerWidget {
+class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
+
+  @override
+  ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
+}
+
+class _BrowseScreenState extends ConsumerState<BrowseScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear any filters when returning to the Browse screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(booksProvider.notifier).clearFilters();
+    });
+  }
 
   static const _heroImageUrl =
       'https://images.unsplash.com/photo-1551269901-5c5e14c25df7?auto=format&fit=crop&w=400&q=80';
 
-  static final _categories = [
-    _BrowseCategory(
-      title: 'Trending',
-      icon: Icons.local_fire_department,
-      backgroundColor: Color(0xFFFFF1E5),
-      iconColor: Color(0xFFEA580C),
-    ),
-    _BrowseCategory(
-      title: 'Fiction',
-      icon: Icons.menu_book,
+  static final _genreCategories = [
+    (
+      category: BookCategory.fiction,
       backgroundColor: Color(0xFFE8F0FE),
       iconColor: Color(0xFF2563EB),
     ),
-    _BrowseCategory(
-      title: 'Romance',
-      icon: Icons.favorite,
+    (
+      category: BookCategory.childrens,
       backgroundColor: Color(0xFFFED7E2),
       iconColor: Color(0xFFDB2777),
     ),
-    _BrowseCategory(
-      title: 'Sci-Fi',
-      icon: Icons.star,
-      backgroundColor: Color(0xFFEDE9FE),
-      iconColor: Color(0xFF7C3AED),
+    (
+      category: BookCategory.arts,
+      backgroundColor: Color(0xFFE0E7FF),
+      iconColor: Color(0xFF6366F1),
     ),
-    _BrowseCategory(
-      title: 'Explore',
-      icon: Icons.explore,
-      backgroundColor: Color(0xFFE6F6F1),
-      iconColor: Color(0xFF0F766E),
+    (
+      category: BookCategory.science,
+      backgroundColor: Color(0xFFF0FDF4),
+      iconColor: Color(0xFF16A34A),
+    ),
+    (
+      category: BookCategory.technology,
+      backgroundColor: Color(0xFFFCE7F3),
+      iconColor: Color(0xFFBE185D),
+    ),
+    (
+      category: BookCategory.history,
+      backgroundColor: Color(0xFFFEF3C7),
+      iconColor: Color(0xFFD97706),
     ),
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final booksState = ref.watch(booksProvider);
     final notifier = ref.read(booksProvider.notifier);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     Widget heroCard() {
-      return Container(
-        decoration: BoxDecoration(
-          color: theme.brightness == Brightness.light
-              ? const Color(0xFFE1F0F8)
-              : colorScheme.primary.withAlpha((0.16 * 255).round()),
-          borderRadius: BorderRadius.circular(32),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withAlpha(
-                      (0.08 * 255).round(),
-                    ),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.star, size: 16, color: colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Staff Pick',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Harry Potter\nCollection',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Available for swap.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withAlpha(
-                      (0.74 * 255).round(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                FilledButton.tonal(
-                  onPressed: () => context.go('/search'),
-                  style: FilledButton.styleFrom(
+      // Find first swap book to display as featured
+      final swapBooks = booksState.books
+          .where((book) => book.type == ListingType.swap)
+          .toList();
+      final featuredBook = swapBooks.isNotEmpty ? swapBooks.first : null;
+
+      if (featuredBook == null) {
+        return const SizedBox.shrink();
+      }
+
+      return GestureDetector(
+        onTap: () => context.go('/book/${featuredBook.id}'),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.brightness == Brightness.light
+                ? const Color(0xFFE1F0F8)
+                : colorScheme.primary.withAlpha((0.16 * 255).round()),
+            borderRadius: BorderRadius.circular(32),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                    backgroundColor: theme.brightness == Brightness.light
-                        ? Colors.white
-                        : colorScheme.primary,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('View Details'),
-                      const SizedBox(width: 10),
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: theme.brightness == Brightness.light
-                              ? const Color(0xFFF1F5F9)
-                              : Colors.white.withAlpha(220),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          Icons.play_arrow,
-                          size: 16,
-                          color: theme.brightness == Brightness.light
-                              ? colorScheme.onSurface
-                              : colorScheme.primary,
-                        ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withAlpha(
+                        (0.08 * 255).round(),
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star, size: 16, color: colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Staff Pick',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Positioned(
-              right: -8,
-              bottom: -12,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: SizedBox(
-                  width: 140,
-                  height: 170,
-                  child: Image.network(_heroImageUrl, fit: BoxFit.cover),
+                  const SizedBox(height: 16),
+                  Text(
+                    featuredBook.title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'By ${featuredBook.author} - Available for swap.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.textTheme.bodyMedium?.color?.withAlpha(
+                        (0.74 * 255).round(),
+                      ),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.tonal(
+                    onPressed: () => context.go('/book/${featuredBook.id}'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      backgroundColor: theme.brightness == Brightness.light
+                          ? Colors.white
+                          : colorScheme.primary,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('View Details'),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: theme.brightness == Brightness.light
+                                ? const Color(0xFFF1F5F9)
+                                : Colors.white.withAlpha(220),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            Icons.play_arrow,
+                            size: 16,
+                            color: theme.brightness == Brightness.light
+                                ? colorScheme.onSurface
+                                : colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                right: -8,
+                bottom: -12,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: SizedBox(
+                    width: 140,
+                    height: 170,
+                    child: Image.network(_heroImageUrl, fit: BoxFit.cover),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -177,42 +209,49 @@ class BrowseScreen extends ConsumerWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: _categories.length,
+          itemCount: _genreCategories.length,
           separatorBuilder: (context, _) => const SizedBox(width: 12),
           itemBuilder: (context, index) {
-            final category = _categories[index];
-            return Container(
-              width: 96,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: category.backgroundColor,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: category.iconColor.withAlpha((0.16 * 255).round()),
-                      borderRadius: BorderRadius.circular(14),
+            final item = _genreCategories[index];
+            final category = item.category;
+            return GestureDetector(
+              onTap: () {
+                ref.read(booksProvider.notifier).setFilterCategory(category);
+                context.go('/search');
+              },
+              child: Container(
+                width: 96,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: item.backgroundColor,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: item.iconColor.withAlpha((0.16 * 255).round()),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        category.icon,
+                        color: item.iconColor,
+                        size: 20,
+                      ),
                     ),
-                    child: Icon(
-                      category.icon,
-                      color: category.iconColor,
-                      size: 20,
+                    const SizedBox(height: 14),
+                    Text(
+                      category.displayName,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    category.title,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -320,16 +359,3 @@ class BrowseScreen extends ConsumerWidget {
   }
 }
 
-class _BrowseCategory {
-  final String title;
-  final IconData icon;
-  final Color backgroundColor;
-  final Color iconColor;
-
-  const _BrowseCategory({
-    required this.title,
-    required this.icon,
-    required this.backgroundColor,
-    required this.iconColor,
-  });
-}

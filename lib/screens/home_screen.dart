@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   final Widget child;
 
   const HomeScreen({super.key, required this.child});
@@ -60,8 +62,9 @@ class HomeScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = _getSelectedIndex(context);
+    final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -88,6 +91,15 @@ class HomeScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (user != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      user.email ?? '',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onPrimary.withAlpha(200),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -130,6 +142,15 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 context.go('/about');
                 Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Sign Out'),
+              onTap: () async {
+                Navigator.pop(context);
+                await ref.read(authServiceProvider).signOut();
               },
             ),
           ],

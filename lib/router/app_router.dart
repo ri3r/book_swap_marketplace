@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../models/book_listing.dart';
 import '../screens/home_screen.dart';
@@ -7,10 +8,32 @@ import '../screens/add_listing_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/book_detail_screen.dart';
 import '../screens/about_screen.dart';
+import '../screens/login_screen.dart';
+import '../screens/register_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
+  redirect: (context, state) {
+    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+    final isAuthRoute =
+        state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register';
+
+    if (!isLoggedIn && !isAuthRoute) return '/login';
+    if (isLoggedIn && isAuthRoute) return '/';
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: '/login',
+      name: 'login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      name: 'register',
+      builder: (context, state) => const RegisterScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child) => HomeScreen(child: child),
       routes: [
