@@ -19,7 +19,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   @override
   void initState() {
     super.initState();
-    // Clear any filters when returning to the Browse screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(booksProvider.notifier).clearFilters();
     });

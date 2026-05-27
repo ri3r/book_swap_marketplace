@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/books_provider.dart';
+import '../providers/search_filters_provider.dart';
 import '../models/book_listing.dart';
 import '../utils/validators.dart';
 import '../widgets/book_list_tile.dart';
@@ -22,13 +23,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    // Initialize with any pre-selected category from the provider
+    // Re-apply saved search filters to booksProvider (Browse may have cleared them)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final booksState = ref.read(booksProvider);
-      setState(() {
-        _selectedCategory = booksState.filterCategory;
-        _selectedType = booksState.filterType;
-      });
+      final filters = ref.read(searchFiltersProvider);
+      ref.read(booksProvider.notifier).setFilterCategory(filters.category);
+      ref.read(booksProvider.notifier).setFilterType(filters.type);
     });
   }
 
@@ -48,11 +47,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
+  void _setCategory(BookCategory? category) {
+    ref.read(searchFiltersProvider.notifier).setCategory(category);
+    ref.read(booksProvider.notifier).setFilterCategory(category);
+  }
+
+  void _setType(ListingType? type) {
+    ref.read(searchFiltersProvider.notifier).setType(type);
+    ref.read(booksProvider.notifier).setFilterType(type);
+  }
+
   @override
   Widget build(BuildContext context) {
     final booksState = ref.watch(booksProvider);
-    final selectedCategory = booksState.filterCategory;
-    final selectedType = booksState.filterType;
+    final filters = ref.watch(searchFiltersProvider);
 
     return SingleChildScrollView(
       child: Padding(
@@ -94,16 +102,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               children: [
                 FilterChip(
                   label: const Text('All'),
-                  selected: selectedCategory == null,
-                  onSelected: (_) =>
-                      ref.read(booksProvider.notifier).setFilterCategory(null),
+                  selected: filters.category == null,
+                  onSelected: (_) => _setCategory(null),
                 ),
                 ...BookCategory.values.map((cat) => FilterChip(
                   label: Text(cat.displayName),
-                  selected: selectedCategory == cat,
-                  onSelected: (selected) => ref
-                      .read(booksProvider.notifier)
-                      .setFilterCategory(selected ? cat : null),
+                  selected: filters.category == cat,
+                  onSelected: (selected) =>
+                      _setCategory(selected ? cat : null),
                 )),
               ],
             ),
@@ -118,16 +124,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               children: [
                 FilterChip(
                   label: const Text('All'),
-                  selected: selectedType == null,
-                  onSelected: (_) =>
-                      ref.read(booksProvider.notifier).setFilterType(null),
+                  selected: filters.type == null,
+                  onSelected: (_) => _setType(null),
                 ),
                 ...ListingType.values.map((type) => FilterChip(
                   label: Text(type.displayName),
-                  selected: selectedType == type,
-                  onSelected: (selected) => ref
-                      .read(booksProvider.notifier)
-                      .setFilterType(selected ? type : null),
+                  selected: filters.type == type,
+                  onSelected: (selected) =>
+                      _setType(selected ? type : null),
                 )),
               ],
             ),
@@ -146,8 +150,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
               )),
             ] else if (_searchController.text.isNotEmpty ||
-                _selectedCategory != null ||
-                _selectedType != null)
+                filters.category != null ||
+                filters.type != null)
               const EmptyStateWidget(
                 title: 'No Results',
                 message: 'Try adjusting your search or filters',
