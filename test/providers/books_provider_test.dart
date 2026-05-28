@@ -1,157 +1,247 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:boook_marketplace/models/book_listing.dart';
 import 'package:boook_marketplace/providers/books_provider.dart';
 import 'package:boook_marketplace/services/book_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class FakeBookService extends BookService {
-  static final List<BookListing> _testBooks = [
-    BookListing(
-      id: '1',
-      title: 'Book One',
-      author: 'Author One',
-      price: 10.0,
-      condition: BookCondition.good,
-      type: ListingType.sale,
-      category: BookCategory.fiction,
-      description: 'A test book',
-      sellerName: 'Seller One',
-      sellerContact: 'seller1@example.com',
-      location: 'City 1',
-      datePosted: DateTime.now(),
-    ),
-    BookListing(
-      id: '2',
-      title: 'Book Two',
-      author: 'Author Two',
-      price: 15.0,
-      condition: BookCondition.newBook,
-      type: ListingType.sale,
-      category: BookCategory.nonFiction,
-      description: 'Another test book',
-      sellerName: 'Seller Two',
-      sellerContact: 'seller2@example.com',
-      location: 'City 2',
-      datePosted: DateTime.now(),
-    ),
-    BookListing(
-      id: '3',
-      title: 'Science Book',
-      author: 'Science Author',
-      price: 20.0,
-      condition: BookCondition.fair,
-      type: ListingType.swap,
-      category: BookCategory.science,
-      description: 'A science book',
-      sellerName: 'Seller Three',
-      sellerContact: 'seller3@example.com',
-      location: 'City 3',
-      datePosted: DateTime.now(),
-    ),
-  ];
+  final List<BookListing> books;
+
+  FakeBookService(this.books);
 
   @override
+  Future<List<BookListing>> loadAllBooks() async => books;
+}
+
+class FailingBookService extends BookService {
+  @override
   Future<List<BookListing>> loadAllBooks() async {
-    return _testBooks;
+    throw Exception('network unavailable');
   }
+}
+
+BookListing makeBook(
+  int index, {
+  BookCategory category = BookCategory.fiction,
+  ListingType type = ListingType.sale,
+}) {
+  return BookListing(
+    id: '$index',
+    title: 'Book $index',
+    author: 'Author $index',
+    price: index.toDouble(),
+    condition: BookCondition.good,
+    type: type,
+    category: category,
+    description: 'Description for generated book $index.',
+    sellerName: 'Seller $index',
+    sellerContact: 'seller$index@example.com',
+    location: 'City $index',
+    datePosted: DateTime(2026, 5, index),
+  );
 }
 
 void main() {
   group('BooksNotifier', () {
-    late ProviderContainer container;
-
-    setUp(() {
-      container = ProviderContainer(
-        overrides: [
-          bookServiceProvider.overrideWithValue(FakeBookService()),
-        ],
-      );
-    });
-
-    tearDown(() {
-      container.dispose();
-    });
-
-    test('loads books on initialization', () async {
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      final state = container.read(booksProvider);
-      expect(state.books, isNotEmpty);
-      expect(state.books.length, lessThanOrEqualTo(10));
-      expect(state.isLoading, false);
-    });
-
-    test('search filters books correctly', () async {
-      final notifier = container.read(booksProvider.notifier);
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      notifier.setSearch('Science');
-      final state = container.read(booksProvider);
-
-      expect(state.books.length, 1);
-      expect(state.books.first.title, 'Science Book');
-    });
-
-    test('category filter works', () async {
-      final notifier = container.read(booksProvider.notifier);
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      notifier.setFilterCategory(BookCategory.science);
-      final state = container.read(booksProvider);
-
-      expect(state.books.length, 1);
-      expect(state.books.first.category, BookCategory.science);
-    });
-
-    test('listing type filter works', () async {
-      final notifier = container.read(booksProvider.notifier);
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      notifier.setFilterType(ListingType.swap);
-      final state = container.read(booksProvider);
-
-      expect(state.books.length, 1);
-      expect(state.books.first.type, ListingType.swap);
-    });
-
-    test('combines multiple filters', () async {
-      final notifier = container.read(booksProvider.notifier);
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      notifier.setFilterCategory(BookCategory.fiction);
-      notifier.setFilterType(ListingType.sale);
-      final state = container.read(booksProvider);
-
-      expect(state.books.length, 1);
-      expect(state.books.first.title, 'Book One');
-    });
-
-    test('can add new listing', () async {
-      final notifier = container.read(booksProvider.notifier);
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      final initialCount = container.read(booksProvider).books.length;
-
-      final newBook = BookListing(
-        id: '99',
-        title: 'New Book',
-        author: 'New Author',
-        price: 25.0,
+    final books = [
+      BookListing(
+        id: '1',
+        title: 'Flutter Basics',
+        author: 'Dana Dev',
+        price: 10,
         condition: BookCondition.good,
         type: ListingType.sale,
+        category: BookCategory.technology,
+        description: 'A beginner friendly Flutter guide.',
+        sellerName: 'Dana',
+        sellerContact: 'dana@example.com',
+        location: 'Berlin',
+        datePosted: DateTime(2026, 5, 1),
+      ),
+      BookListing(
+        id: '2',
+        title: 'World History',
+        author: 'Chris Stone',
+        price: 0,
+        condition: BookCondition.fair,
+        type: ListingType.swap,
+        category: BookCategory.history,
+        description: 'A broad overview of modern history.',
+        sellerName: 'Chris',
+        sellerContact: 'chris@example.com',
+        location: 'Hamburg',
+        datePosted: DateTime(2026, 5, 2),
+      ),
+    ];
+
+    test('loads initial books from the service', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      expect(notifier.state.isLoading, isFalse);
+      expect(notifier.state.error, isNull);
+      expect(notifier.state.books, books);
+      expect(notifier.state.allBooks, books);
+    });
+
+    test('setSearch filters the loaded books', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      notifier.setSearch('history');
+
+      expect(notifier.state.searchQuery, 'history');
+      expect(notifier.state.books, [books[1]]);
+    });
+
+    test('setFilterCategory filters by category', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      notifier.setFilterCategory(BookCategory.technology);
+
+      expect(notifier.state.filterCategory, BookCategory.technology);
+      expect(notifier.state.books, [books[0]]);
+    });
+
+    test('setFilterType filters by listing type', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      notifier.setFilterType(ListingType.swap);
+
+      expect(notifier.state.filterType, ListingType.swap);
+      expect(notifier.state.books, [books[1]]);
+    });
+
+    test('combines search, category, and listing type filters', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      notifier.setSearch('flutter');
+      notifier.setFilterCategory(BookCategory.technology);
+      notifier.setFilterType(ListingType.sale);
+
+      expect(notifier.state.books, [books[0]]);
+    });
+
+    test('clearFilters restores all loaded books', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      notifier.setSearch('history');
+      notifier.setFilterType(ListingType.swap);
+      notifier.clearFilters();
+
+      expect(notifier.state.searchQuery, isEmpty);
+      expect(notifier.state.filterCategory, isNull);
+      expect(notifier.state.filterType, isNull);
+      expect(notifier.state.books, books);
+    });
+
+    test('addListing prepends a new listing to the provider state', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      final newListing = BookListing(
+        id: '3',
+        title: 'Free Novel',
+        author: 'Robin Page',
+        price: 0,
+        condition: BookCondition.likeNew,
+        type: ListingType.free,
         category: BookCategory.fiction,
-        description: 'A newly added book',
-        sellerName: 'New Seller',
-        sellerContact: 'newseller@example.com',
-        location: 'New City',
-        datePosted: DateTime.now(),
+        description: 'A novel available for free pickup.',
+        sellerName: 'Robin',
+        sellerContact: 'robin@example.com',
+        location: 'Cologne',
+        datePosted: DateTime(2026, 5, 3),
       );
 
-      await notifier.addListing(newBook);
-      final newState = container.read(booksProvider);
+      await notifier.addListing(newListing);
 
-      expect(newState.books.length, greaterThan(initialCount));
-      expect(newState.books.first.id, '99');
+      expect(notifier.state.books.first, newListing);
+      expect(notifier.state.allBooks.first, newListing);
+      expect(notifier.state.books.length, 3);
+    });
+
+    test('updateListing replaces an existing listing', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      final updated = books[0].copyWith(
+        title: 'Flutter Basics, Second Edition',
+        price: 14,
+      );
+
+      await notifier.updateListing(updated);
+
+      expect(notifier.state.books.first.title, 'Flutter Basics, Second Edition');
+      expect(notifier.state.books.first.price, 14);
+      expect(notifier.state.allBooks.first, updated);
+    });
+
+    test('deleteListing removes a listing from visible and full state', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+
+      await notifier.deleteListing('1');
+
+      expect(notifier.state.books, [books[1]]);
+      expect(notifier.state.allBooks, [books[1]]);
+    });
+
+    test('loadMore appends the next page and then stops at the end', () async {
+      final pagedBooks = List.generate(12, (index) => makeBook(index + 1));
+      final notifier = BooksNotifier(FakeBookService(pagedBooks));
+      await notifier.loadInitial();
+
+      expect(notifier.state.books.length, 10);
+      expect(notifier.state.hasMore, isTrue);
+
+      await notifier.loadMore();
+
+      expect(notifier.state.books.length, 12);
+      expect(notifier.state.isLoadingMore, isFalse);
+      expect(notifier.state.hasMore, isFalse);
+
+      await notifier.loadMore();
+
+      expect(notifier.state.books.length, 12);
+      expect(notifier.state.hasMore, isFalse);
+    });
+
+    test('loadInitial stores an error when the service fails', () async {
+      final notifier = BooksNotifier(FailingBookService());
+      await notifier.loadInitial();
+
+      expect(notifier.state.isLoading, isFalse);
+      expect(notifier.state.books, isEmpty);
+      expect(notifier.state.error, contains('network unavailable'));
+    });
+
+    test('retry reloads books after the current state is changed', () async {
+      final notifier = BooksNotifier(FakeBookService(books));
+      await notifier.loadInitial();
+      notifier.setSearch('flutter');
+
+      expect(notifier.state.books, [books[0]]);
+
+      await notifier.retry();
+
+      expect(notifier.state.books, [books[0]]);
+      expect(notifier.state.error, isNull);
+    });
+
+    test('Riverpod provider wires BooksNotifier to the configured service', () async {
+      final container = ProviderContainer(
+        overrides: [bookServiceProvider.overrideWithValue(FakeBookService(books))],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(booksProvider.notifier).loadInitial();
+
+      expect(container.read(booksProvider).books, books);
     });
   });
 }

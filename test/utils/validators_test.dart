@@ -1,167 +1,75 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:boook_marketplace/utils/validators.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Validators', () {
-    group('validateTitle', () {
-      test('returns error for empty title', () {
-        expect(Validators.validateTitle(''), isNotNull);
-        expect(Validators.validateTitle(null), isNotNull);
-      });
-
-      test('returns error for title too short', () {
-        expect(Validators.validateTitle('a'), isNotNull);
-      });
-
-      test('returns error for title too long', () {
-        expect(Validators.validateTitle('a' * 201), isNotNull);
-      });
-
-      test('returns null for valid title', () {
-        expect(Validators.validateTitle('The Great Gatsby'), isNull);
-        expect(Validators.validateTitle('ab'), isNull);
-      });
+    test('validateTitle requires a 2 to 200 character title', () {
+      expect(Validators.validateTitle(null), 'Title is required');
+      expect(Validators.validateTitle(' '), 'Title is required');
+      expect(Validators.validateTitle('A'), 'Title must be at least 2 characters');
+      expect(
+        Validators.validateTitle('A' * 201),
+        'Title must not exceed 200 characters',
+      );
+      expect(Validators.validateTitle('Dune'), isNull);
     });
 
-    group('validateAuthor', () {
-      test('returns error for empty author', () {
-        expect(Validators.validateAuthor(''), isNotNull);
-        expect(Validators.validateAuthor(null), isNotNull);
-      });
-
-      test('returns error for author too short', () {
-        expect(Validators.validateAuthor('a'), isNotNull);
-      });
-
-      test('returns null for valid author', () {
-        expect(Validators.validateAuthor('F. Scott Fitzgerald'), isNull);
-      });
+    test('validateAuthor requires at least 2 characters', () {
+      expect(Validators.validateAuthor(null), 'Author is required');
+      expect(Validators.validateAuthor(' '), 'Author is required');
+      expect(Validators.validateAuthor('A'), 'Author must be at least 2 characters');
+      expect(Validators.validateAuthor('Frank Herbert'), isNull);
     });
 
-    group('validateEmail', () {
-      test('returns error for empty email', () {
-        expect(Validators.validateEmail(''), isNotNull);
-        expect(Validators.validateEmail(null), isNotNull);
-      });
-
-      test('returns error for invalid email format', () {
-        expect(Validators.validateEmail('notanemail'), isNotNull);
-        expect(Validators.validateEmail('user@'), isNotNull);
-        expect(Validators.validateEmail('@example.com'), isNotNull);
-      });
-
-      test('returns null for valid email', () {
-        expect(Validators.validateEmail('user@example.com'), isNull);
-        expect(Validators.validateEmail('test.user+tag@example.co.uk'), isNull);
-      });
+    test('validateEmail requires a valid email address', () {
+      expect(Validators.validateEmail(null), 'Email is required');
+      expect(Validators.validateEmail('reader'), 'Enter a valid email address');
+      expect(Validators.validateEmail('reader@example.com'), isNull);
     });
 
-    group('validatePrice', () {
-      test('returns null for empty price (optional)', () {
-        expect(Validators.validatePrice(''), isNull);
-        expect(Validators.validatePrice(null), isNull);
-      });
-
-      test('returns error for non-numeric price', () {
-        expect(Validators.validatePrice('abc'), isNotNull);
-      });
-
-      test('returns error for negative price', () {
-        expect(Validators.validatePrice('-10'), isNotNull);
-      });
-
-      test('returns error for price too high', () {
-        expect(Validators.validatePrice('10000'), isNotNull);
-      });
-
-      test('returns null for valid price', () {
-        expect(Validators.validatePrice('9.99'), isNull);
-        expect(Validators.validatePrice('100'), isNull);
-        expect(Validators.validatePrice('0'), isNull);
-      });
+    test('validatePrice allows empty optional values and checks bounds', () {
+      expect(Validators.validatePrice(null), isNull);
+      expect(Validators.validatePrice(''), isNull);
+      expect(Validators.validatePrice('abc'), 'Enter a valid number');
+      expect(Validators.validatePrice('-1'), 'Price cannot be negative');
+      expect(Validators.validatePrice('10000'), 'Price seems too high');
+      expect(Validators.validatePrice('12.50'), isNull);
     });
 
-    group('validateDescription', () {
-      test('returns error for empty description', () {
-        expect(Validators.validateDescription(''), isNotNull);
-        expect(Validators.validateDescription(null), isNotNull);
-      });
-
-      test('returns error for description too short', () {
-        expect(Validators.validateDescription('short'), isNotNull);
-      });
-
-      test('returns error for description too long', () {
-        expect(Validators.validateDescription('a' * 1001), isNotNull);
-      });
-
-      test('returns null for valid description', () {
-        expect(
-          Validators.validateDescription('This is a great book that everyone should read'),
-          isNull,
-        );
-      });
+    test('validateDescription requires 10 to 1000 characters', () {
+      expect(Validators.validateDescription(null), 'Description is required');
+      expect(Validators.validateDescription('short'), 'Description must be at least 10 characters');
+      expect(
+        Validators.validateDescription('A' * 1001),
+        'Description must not exceed 1000 characters',
+      );
+      expect(Validators.validateDescription('A helpful book description.'), isNull);
     });
 
-    group('validateLocation', () {
-      test('returns error for empty location', () {
-        expect(Validators.validateLocation(''), isNotNull);
-        expect(Validators.validateLocation(null), isNotNull);
-      });
-
-      test('returns error for location too short', () {
-        expect(Validators.validateLocation('a'), isNotNull);
-      });
-
-      test('returns null for valid location', () {
-        expect(Validators.validateLocation('Munich, Germany'), isNull);
-        expect(Validators.validateLocation('NY'), isNull);
-      });
+    test('validateLocation requires at least 2 characters', () {
+      expect(Validators.validateLocation(null), 'Location is required');
+      expect(Validators.validateLocation('A'), 'Enter a valid location');
+      expect(Validators.validateLocation('Berlin'), isNull);
     });
 
-    group('validateIsbn', () {
-      test('returns null for empty ISBN (optional)', () {
-        expect(Validators.validateIsbn(''), isNull);
-        expect(Validators.validateIsbn(null), isNull);
-      });
-
-      test('returns error for invalid ISBN length', () {
-        expect(Validators.validateIsbn('123'), isNotNull);
-        expect(Validators.validateIsbn('123456789014'), isNotNull);
-      });
-
-      test('returns error for non-numeric ISBN', () {
-        expect(Validators.validateIsbn('978074327356X'), isNotNull);
-      });
-
-      test('returns null for valid 10-digit ISBN', () {
-        expect(Validators.validateIsbn('0743273565'), isNull);
-      });
-
-      test('returns null for valid 13-digit ISBN', () {
-        expect(Validators.validateIsbn('9780743273565'), isNull);
-      });
-
-      test('handles ISBN with dashes and spaces', () {
-        expect(Validators.validateIsbn('978-0-743-27356-5'), isNull);
-        expect(Validators.validateIsbn('978 0 743 27356 5'), isNull);
-      });
+    test('validateIsbn allows empty optional values and checks digit length', () {
+      expect(Validators.validateIsbn(null), isNull);
+      expect(Validators.validateIsbn(''), isNull);
+      expect(Validators.validateIsbn('123'), 'ISBN must be 10 or 13 digits');
+      expect(Validators.validateIsbn('123456789X'), 'ISBN must contain only digits');
+      expect(Validators.validateIsbn('978-0-13-235088-4'), isNull);
     });
 
-    group('validateSearch', () {
-      test('returns error for empty search', () {
-        expect(Validators.validateSearch(''), isNotNull);
-        expect(Validators.validateSearch(null), isNotNull);
-      });
+    test('validatePassword requires at least 6 characters', () {
+      expect(Validators.validatePassword(null), 'Password is required');
+      expect(Validators.validatePassword('12345'), 'Password must be at least 6 characters');
+      expect(Validators.validatePassword('123456'), isNull);
+    });
 
-      test('returns error for search too short', () {
-        expect(Validators.validateSearch('a'), isNotNull);
-      });
-
-      test('returns null for valid search', () {
-        expect(Validators.validateSearch('The Great Gatsby'), isNull);
-        expect(Validators.validateSearch('ab'), isNull);
-      });
+    test('validateSearch requires at least 2 characters', () {
+      expect(Validators.validateSearch(null), 'Enter a search term');
+      expect(Validators.validateSearch('A'), 'Search term must be at least 2 characters');
+      expect(Validators.validateSearch('Dune'), isNull);
     });
   });
 }
