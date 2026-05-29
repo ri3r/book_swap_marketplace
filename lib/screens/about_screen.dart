@@ -8,7 +8,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About BookHero'),
+        title: const Text('About BookSwap'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
