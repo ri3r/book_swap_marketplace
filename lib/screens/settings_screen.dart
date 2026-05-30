@@ -155,7 +155,7 @@ class SettingsScreen extends ConsumerWidget {
           // ── About ────────────────────────────────────────────────
           _SectionHeader('About'),
           ListTile(
-            title: const Text('About BookHero'),
+            title: const Text('About BookSwap'),
             subtitle: const Text('Team, features & technology'),
             leading: const Icon(Icons.info_outline),
             trailing: const Icon(Icons.chevron_right),
